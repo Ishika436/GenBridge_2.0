@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – GenBridge</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2rem;
+      padding: 2rem 0;
+    }
+
+    .sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .profile-card {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+      border-radius: var(--radius);
+      padding: 1.8rem 1.5rem;
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(47,128,237,0.3);
+    }
+
+    .profile-avatar-lg {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700;
+      margin: 0 auto 1rem;
+      border: 3px solid rgba(255,255,255,0.4);
+    }
+
+    .profile-card h3 { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 3px; }
+    .profile-card p { font-size: 0.83rem; opacity: 0.8; margin-bottom: 1rem; }
+
+    .role-tag { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 50px; padding: 4px 14px; font-size: 0.8rem; font-weight: 600; }
+
+    .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+    .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; box-shadow: var(--shadow); }
+    .stat-card .stat-num { font-size: 1.8rem; font-weight: 700; color: var(--blue); font-family: 'Playfair Display', serif; }
+    .stat-card .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; }
+
+    .quick-actions { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; box-shadow: var(--shadow); }
+    .quick-actions h4 { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.8rem; }
+
+    .qa-btn { display: flex; align-items: center; gap: 10px; padding: 0.7rem 0.8rem; border-radius: 10px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 500; color: var(--text); transition: background 0.15s; }
+    .qa-btn:hover { background: var(--blue-light); color: var(--blue); }
+
+    .main-content { display: flex; flex-direction: column; gap: 1.8rem; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .section-header h2 { font-size: 1.3rem; }
+
+    .empty-state { text-align: center; padding: 3rem; background: #fff; border: 2px dashed var(--border); border-radius: var(--radius); }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state p { color: var(--text-muted); margin-bottom: 1.2rem; }
+
+    .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+
+    .welcome-banner { background: linear-gradient(135deg, #eaf4ff 0%, #e8f7ee 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem 1.8rem; display: flex; align-items: center; gap: 1.5rem; }
+    .welcome-banner .w-icon { font-size: 2.8rem; }
+    .welcome-banner h2 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+    .welcome-banner p { color: var(--text-muted); font-size: 0.92rem; }
+
+    /* Gender badge in profile */
+    .gender-display {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      margin-left: 4px;
+    }
+
+    @media (max-width: 860px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .sidebar { display: grid; grid-template-columns: 1fr 1fr; }
+      .task-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <div class="container">
+    <div class="dashboard-grid">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="profile-card fade-in fade-in-1">
+          <div class="profile-avatar-lg" id="sidebar-avatar"></div>
+          <h3 id="sidebar-name">Loading…</h3>
+          <p id="sidebar-email">—</p>
+          <span class="role-tag" id="sidebar-role">—</span>
+          <span id="sidebar-gender" style="display:none;" class="gender-display"></span>
+        </div>
+
+        <div class="stat-cards fade-in fade-in-2">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-posted">0</div>
+            <div class="stat-label" id="stat-posted-label">Tasks Posted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-done">0</div>
+            <div class="stat-label" id="stat-done-label">Completed</div>
+          </div>
+        </div>
+
+        <div class="quick-actions card fade-in fade-in-3">
+          <h4 id="qa-heading">Quick Actions</h4>
+          <div id="quick-actions-list"></div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main-content">
+        <div class="welcome-banner fade-in fade-in-1">
+          <div class="w-icon" id="welcome-icon">👋</div>
+          <div>
+            <h2 id="welcome-msg">Welcome back!</h2>
+            <p id="welcome-sub">Here's what's happening on GenBridge today.</p>
+          </div>
+        </div>
+
+        <section class="fade-in fade-in-2">
+          <div class="section-header">
+            <h2 id="recent-section-title">Recent Tasks</h2>
+            <a href="#" id="view-all-link" class="btn btn-outline" style="padding:0.45rem 1rem;font-size:0.85rem;" id="view-all-btn">View All</a>
+          </div>
+          <div id="tasks-container"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const user = Auth.requireAuth();
+    if (!user) throw new Error('No user');
+    seedDemoTasks();
+
+    document.getElementById('navbar-mount').innerHTML = renderNavbar('dashboard');
+
+    // Sidebar avatar
+    const initials = user.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    const avatarEl = document.getElementById('sidebar-avatar');
+    if (user.photo) {
+      avatarEl.innerHTML = `<img src="${user.photo}" alt="${initials}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.5);"/>`;
+      avatarEl.style.background = 'transparent';
+    } else {
+      avatarEl.textContent = initials;
+    }
+    document.getElementById('sidebar-name').textContent = user.name;
+    document.getElementById('sidebar-email').textContent = user.email;
+    document.getElementById('sidebar-role').textContent = user.role === 'seeker' ? t('seeking_help') : t('helper_label');
+
+    // Gender display
+    if (user.gender) {
+      const gEl = document.getElementById('sidebar-gender');
+      const gIcon = user.gender === 'male' ? '👨' : user.gender === 'female' ? '👩' : '🧑';
+      const gName = user.gender === 'male' ? t('gender_male') : user.gender === 'female' ? t('gender_female') : t('gender_other');
+      gEl.innerHTML = `${gIcon} ${gName}`;
+      gEl.style.display = 'inline-flex';
+    }
+
+    // Stats
+    const allTasks = Tasks.getAll();
+    if (user.role === 'seeker') {
+      const myTasks = Tasks.getByUser(user.id);
+      document.getElementById('stat-posted').textContent = myTasks.length;
+      document.getElementById('stat-done').textContent = myTasks.filter(t => t.status === 'completed').length;
+      document.getElementById('stat-posted-label').textContent = t('tasks_posted');
+      document.getElementById('stat-done-label').textContent = t('completed');
+    } else {
+      const myHelps = allTasks.filter(t => t.acceptedById === user.id);
+      document.getElementById('stat-posted').textContent = myHelps.length;
+      document.getElementById('stat-done').textContent = myHelps.filter(t => t.status === 'completed').length;
+      document.getElementById('stat-posted-label').textContent = t('helps_taken');
+      document.getElementById('stat-done-label').textContent = t('completed');
+    }
+
+    // Quick actions label
+    document.getElementById('qa-heading').textContent = t('quick_actions');
+
+    // Welcome message
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? t('good_morning') : hour < 17 ? t('good_afternoon') : t('good_evening');
+    document.getElementById('welcome-msg').textContent = `${greeting}, ${user.name.split(' ')[0]}! 👋`;
+    document.getElementById('welcome-icon').textContent = user.role === 'seeker' ? '👴' : '🙋';
+    document.getElementById('welcome-sub').textContent = user.role === 'seeker' ? t('seeker_welcome_sub') : t('helper_welcome_sub');
+
+    // Quick Actions
+    const qaList = document.getElementById('quick-actions-list');
+    if (user.role === 'seeker') {
+      qaList.innerHTML = `
+        <button class="qa-btn" onclick="window.location.href='post-task.html'">${t('qa_post')}</button>
+        <button class="qa-btn" onclick="window.location.href='my-tasks.html'">${t('qa_my_tasks')}</button>
+        <button class="qa-btn" onclick="window.location.href='tasks-nearby.html'">${t('qa_browse')}</button>
+      `;
+      document.getElementById('recent-section-title').textContent = t('recent_tasks');
+      document.getElementById('view-all-link').href = 'my-tasks.html';
+    } else {
+      qaList.innerHTML = `
+        <button class="qa-btn" onclick="window.location.href='tasks-nearby.html'">${t('qa_nearby')}</button>
+        <button class="qa-btn" onclick="window.location.href='my-tasks.html'">${t('qa_helps')}</button>
+      `;
+      document.getElementById('recent-section-title').textContent = t('latest_tasks');
+      document.getElementById('view-all-link').href = 'tasks-nearby.html';
+    }
+    document.getElementById('view-all-link').textContent = t('view_all');
+
+    // Tasks
+    const container = document.getElementById('tasks-container');
+    const displayTasks = user.role === 'seeker'
+      ? Tasks.getByUser(user.id).slice(0, 4)
+      : allTasks.filter(t => t.status === 'open').slice(0, 4);
+
+    if (displayTasks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">${user.role === 'seeker' ? '📝' : '🔍'}</div>
+          <p>${user.role === 'seeker' ? 'You haven\'t posted any tasks yet.' : 'No open tasks available right now.'}</p>
+          ${user.role === 'seeker' ? '<a href="post-task.html" class="btn btn-primary">Post Your First Task</a>' : ''}
+        </div>`;
+    } else {
+      const statusColors = { open: 'badge-blue', accepted: 'badge-orange', completed: 'badge-green' };
+      container.innerHTML = `<div class="task-grid">` + displayTasks.map(t => `
+        <div class="task-card fade-in">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+            <span class="badge badge-blue">${t.category || 'General'}</span>
+            <span class="badge ${statusColors[t.status] || 'badge-blue'}">${t.status}</span>
+          </div>
+          <h3>${t.title}</h3>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin:0.4rem 0 0.7rem;">${t.description?.slice(0,80)}…</p>
+          <div class="task-meta">
+            <span>📍 ${t.location}</span>
+            <span>💰 ${t.pay}</span>
+            <span>👤 ${t.postedBy}</span>
+          </div>
+          ${t.urgent ? '<span class="badge badge-orange">🔴 Urgent</span>' : ''}
+        </div>
+      `).join('') + `</div>`;
+    }
+  </script>
+</body>
+</html>
